@@ -28,7 +28,7 @@ Allows you the ability to set Updates and Automatic Background Updates through S
 * Translation PO file
 * Uninstall this plugin restore default WordPress behavior
 
-= languages =
+= Languages =
 
 * English
 * French
