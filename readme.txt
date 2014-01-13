@@ -22,7 +22,7 @@ Allows you the ability to set Updates and Automatic Background Updates through S
 * Set Minor Core Automatic Background Updates
 * Set Plugin Automatic Background Updates
 * Set Theme Automatic Background Updates
-* Set Translation file updates Automatic Background Updates
+* Set Translation files Automatic Background Updates
 * Add Updates panel (Settings > Updates)
 * Contextual Help
 * Translation MO/PO files
