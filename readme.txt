@@ -16,16 +16,16 @@ Allows you the ability to set Updates and Automatic Background Updates through S
 = Features =
 
 * Show/hide Updates notification
-* Use default Wordpress behavior
+* Use default Wordpress behaviors
 * Enable/Disable Updates capabilities to Administrator users
 * Set Major Core Automatic Background Updates
-* Set Major Minor Automatic Background Updates
+* Set Minor Core Automatic Background Updates
 * Set Plugin Automatic Background Updates
 * Set Theme Automatic Background Updates
 * Set Translation file updates Automatic Background Updates
 * Add Updates panel (Settings > Updates)
 * Contextual Help
-* Translation PO file
+* Translation MO/PO files
 * Uninstall this plugin restore default WordPress behavior
 
 = Languages =
