@@ -2,8 +2,8 @@
 Contributors: Yslo
 Tags: automatic, background, updates, admin, plugin
 Requires at least: 3.7
-Tested up to: 3.8
-Stable tag: 1.0.0
+Tested up to: 3.9
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,7 +26,8 @@ Allows you the ability to set Updates and Automatic Background Updates through S
 * Add Updates panel (Settings > Updates)
 * Contextual Help
 * Translation MO/PO files
-* Uninstall this plugin restore default WordPress behavior
+* Multisite
+* Uninstall restore default WordPress behavior
 
 = Languages =
 
@@ -40,6 +41,10 @@ Allows you the ability to set Updates and Automatic Background Updates through S
 
 You will find 'Updates' menu in your WordPress Settings panel.
 
+== Upgrade Notice ==
+
+* Upgrade restore default WordPress updates behaviors (1.0.0 -> 1.0.1).
+
 == Screenshots ==
 
 1. Activate the plugin
@@ -49,5 +54,11 @@ You will find 'Updates' menu in your WordPress Settings panel.
 
 == Changelog ==
 
-= 1.0 =
+= 1.0.1 =
+* Multisite
+* Optimize admin_init actions
+* Fix activate/unactivate plugin loss of previously saved settings
+* Translation improvement
+
+= 1.0.0 =
 * Initial version
