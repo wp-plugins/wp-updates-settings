@@ -4,10 +4,10 @@
  * Plugin URI: http://wordpress.org/plugins/wp-updates-settings/
  * Description: Configure WordPress updates settings through UI (User Interface).
  * Author: Yslo
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author URI: http://profiles.wordpress.org/yslo
  * Requires at least: 3.7
- * Tested up to: 3.8
+ * Tested up to: 3.9
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  */
@@ -21,40 +21,35 @@ class WP_Updates_Settings
 	var $wpus_admin_page;
 
 	function __construct(){
+		$this->wpus_options = get_option('yslo_wpus_options');
+
 		// Default install settings
 		register_activation_hook(__FILE__, array(&$this, 'wpus_install'));
 		
 		// Get plugin options
-		$this->wpus_options = get_option('yslo_wpus_options');
 		$this->current_user_role = array(&$this, 'get_user_role');
 		
 		load_plugin_textdomain('wpus-plugin', false, 'wp-updates-settings/languages');
 		
 		add_action('init', array(&$this, 'wpus_init_action'));
-		add_action( 'admin_init', array(&$this, 'wpus_admin_init_action'));
+		add_action( 'admin_init', array(&$this, 'wpus_admin_init'));
 	}
 
-	function wpus_install(){
-		$wpus_options = array(
-			'notification_updates' => 1,
-			'menu_updates' => 1,
-			'minor_updates' => 1,
-			'translation_updates' => 1
-		);
-		
-		update_option('yslo_wpus_options', $wpus_options);
+	function wpus_install(){	
+		if($this->wpus_options === false)
+		{
+			$wpus_options = array(
+				'notification_updates' => 1,
+				'menu_updates' => 1,
+				'minor_updates' => 1,
+				'translation_updates' => 1
+			);
+			
+			update_option('yslo_wpus_options', $wpus_options);
+		}
 	}
 	
-	function wpus_init_action(){
-		if(is_admin()) {
-			// Add admin menu
-			add_action('admin_menu', array(&$this, 'register_wpus_menu_page'));		
-			add_action('admin_init', array(&$this, 'wpus_admin_init'));
-			
-			// Give the plugin a settings link in the plugin overview
-			add_filter('plugin_action_links', array(&$this, 'add_action_link'), 10, 2);
-		}
-		
+	function wpus_init_action(){		
 		// Change WordPress updates behaviors using wpus_options
 		if (!isset($this->wpus_options['notification_updates']) || $this->wpus_options['notification_updates'] == 0){
 			add_action('admin_menu', array(&$this, 'wpus_notification_action'));
@@ -79,11 +74,15 @@ class WP_Updates_Settings
 		if (!isset($this->wpus_options['translation_updates']) || $this->wpus_options['translation_updates'] == 0) {
 			add_filter( 'auto_update_translation', '__return_false' );
 		}
-	}
-	
-	function wpus_admin_init_action(){		
+		
+		// Add admin menu
+		add_action('admin_menu', array(&$this, 'register_wpus_menu_page'));
+		
+		// Give the plugin a settings link in the plugin overview
+		add_filter('plugin_action_links', array(&$this, 'add_action_link'), 10, 2);
+
 		if (!isset($this->wpus_options['menu_updates']) || $this->wpus_options['menu_updates'] == 0){
-			if(current_user_can('update_core')){
+			if(current_user_can('update_core') && !is_multisite()){
 				$role =& get_role('administrator');
 				
 				if(!empty($role)) {
@@ -97,7 +96,7 @@ class WP_Updates_Settings
 			}
 		}
 		else if($this->wpus_options['menu_updates'] == 1 && !current_user_can('update_core')) {
-			if(current_user_can('install_plugins')){	
+			if(current_user_can('install_plugins') && !is_multisite()){	
 				$role =& get_role('administrator');
 
 				if(!empty($role)) {
@@ -159,8 +158,8 @@ class WP_Updates_Settings
 		$screen->add_help_tab( array(
 			'id'	=> 'wpus_help_notification_tab',
 			'title'	=> __('WordPress notification & menu updates', 'wpus-plugin'),
-			'content'	=> '<p><ul><li>' . __('<strong>Updates notification</strong> are displayed by default to users. Uncheck this option to hide updates notifications. Check this option to restore default behavior.', 'wpus-plugin') . '</li></ul>'
-				. '<ul><li>' . __('<strong>Administrator menu updates</strong> are displayed by default to Administrator users (see <a href="http://codex.wordpress.org/Roles_and_Capabilities" target="_blank">Roles and Capabilities in Wordpress Codex</a>). Uncheck this option remove Updates capabilities to Administrator users. Check this option to restore default behavior.', 'wpus-plugin') . '</li></ul>'
+			'content'	=> '<p><ul><li>' . __('<strong>Updates notification</strong> are displayed by default to users. Uncheck this option to hide updates notifications. Check this option to restore default behavior.', 'wpus-plugin') . '</li>'
+				. '<li>' . __('<strong>Administrator menu updates</strong> are displayed by default to Administrator users (see <a href="http://codex.wordpress.org/Roles_and_Capabilities" target="_blank">Roles and Capabilities in Wordpress Codex</a>). Uncheck this option remove Updates capabilities to Administrator users (not avaible for <a href="http://codex.wordpress.org/Glossary#Multisite" target="_blank">Multisite</a>). Check this option to restore default behavior.', 'wpus-plugin') . '</li></ul>'
 				. '</p>',
 		));
 
@@ -168,8 +167,8 @@ class WP_Updates_Settings
 			'id'	=> 'wpus_help_core_tab',
 			'title'	=> __('WordPress core updates', 'wpus-plugin'),
 			'content'	=> '<p>'. __('WordPress 3.7 (and more) use Automatic Background Updates (see <a href="http://codex.wordpress.org/Configuring_Automatic_Background_Updates" target="_blank">Configuring Automatic Background Updates</a>)', 'wpus-plugin')
-				. '<ul><li>' . __('<strong>Minor core updates</strong> are enabled by default. Uncheck this option to disable WordPress Minor core updates. Check this option to restore default behavior.', 'wpus-plugin') . '</li></ul>'
-				. '<ul><li>' . __('<strong>Major core updates</strong> are disabled by default. Check this option to enable WordPress Major core updates. Uncheck this option to restore default behavior.', 'wpus-plugin') . '</li></ul>'
+				. '<ul><li>' . __('<strong>Minor core updates</strong> are enabled by default. Uncheck this option to disable WordPress Minor core updates. Check this option to restore default behavior.', 'wpus-plugin') . '</li>'
+				. '<li>' . __('<strong>Major core updates</strong> are disabled by default. Check this option to enable WordPress Major core updates. Uncheck this option to restore default behavior.', 'wpus-plugin') . '</li></ul>'
 				. '</p>',
 		));
 		
@@ -177,8 +176,8 @@ class WP_Updates_Settings
 			'id'	=> 'wpus_help_plugin_theme_tab',
 			'title'	=> __('Plugin & Theme updates', 'wpus-plugin'),
 			'content'	=> '<p>'. __('WordPress 3.7 (and more) use Automatic Background Updates (see <a href="http://codex.wordpress.org/Configuring_Automatic_Background_Updates" target="_blank">Configuring Automatic Background Updates</a>)', 'wpus-plugin')
-				. '<ul><li>' . __('<strong>Plugin updates</strong> are disabled by default. Check this option to enable WordPress Plugin updates. Uncheck this option to restore default behavior.', 'wpus-plugin') . '</li></ul>'
-				. '<ul><li>' . __('<strong>Theme updates</strong> are disabled by default. Check this option to enable WordPress Theme updates. Uncheck this option to restore default behavior.', 'wpus-plugin') . '</li></ul>'
+				. '<ul><li>' . __('<strong>Plugin updates</strong> are disabled by default. Check this option to enable WordPress Plugin updates. Uncheck this option to restore default behavior.', 'wpus-plugin') . '</li>'
+				. '<li>' . __('<strong>Theme updates</strong> are disabled by default. Check this option to enable WordPress Theme updates. Uncheck this option to restore default behavior.', 'wpus-plugin') . '</li></ul>'
 				. '</p>',
 		));
 		
@@ -210,7 +209,7 @@ class WP_Updates_Settings
 	
 		add_settings_section('wpus_notification', __('WordPress notification & menu updates', 'wpus-plugin'),	array(&$this, 'wpus_notification_section_text'), 'wpus');
 		add_settings_field('wpus_notification_updates', __('Updates notification', 'wpus-plugin'),				array(&$this, 'wpus_notification_updates_input'), 'wpus', 'wpus_notification');
-		add_settings_field('wpus_menu_updates', __('Administrator menu updates', 'wpus-plugin'),				array(&$this, 'wpus_menu_updates_input'), 'wpus', 'wpus_notification');
+		add_settings_field('wpus_menu_updates', __('Administrator menu updates (not available for <a href="http://codex.wordpress.org/Glossary#Multisite" target="_blank">Multisite</a>)', 'wpus-plugin'),				array(&$this, 'wpus_menu_updates_input'), 'wpus', 'wpus_notification');
 	
 		add_settings_section('wpus_core', __('WordPress core updates', 'wpus-plugin'),							array(&$this, 'wpus_core_section_text'), 'wpus');
 		add_settings_field('wpus_minor_updates', __('Minor core updates', 'wpus-plugin'),						array(&$this, 'wpus_minor_updates_input'), 'wpus', 'wpus_core');
@@ -229,7 +228,7 @@ class WP_Updates_Settings
 	}
 	
 	function wpus_core_section_text(){
-		_e('By default, automatic updates are only enabled for minor core releases and translation files.', 'wpus-plugin');
+		_e('By default, automatic updates are only enabled for minor core releases.', 'wpus-plugin');
 	}
 	
 	function wpus_plugin_theme_section_text(){
@@ -237,7 +236,7 @@ class WP_Updates_Settings
 	}
 	
 	function wpus_translation_section_text(){
-		_e('Automatic translation file updates are already enabled by default, the same as minor core updates.', 'wpus-plugin');
+		_e('Automatic translation file updates are already enabled by default.', 'wpus-plugin');
 	}
 	
 	function wpus_notification_updates_input(){
