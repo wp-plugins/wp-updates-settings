@@ -1,9 +1,9 @@
 === WP Updates Settings ===
 Contributors: Yslo
-Tags: automatic, background, updates, admin, plugin
+Tags: automatic, background, updates, admin, plugin, core, theme
 Requires at least: 3.7
 Tested up to: 3.9
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,7 @@ Allows you the ability to set Updates and Automatic Background Updates through S
 * Contextual Help
 * Translation MO/PO files
 * Multisite
+* Deactivate restore default WordPress behavior
 * Uninstall restore default WordPress behavior
 
 = Languages =
@@ -53,6 +54,10 @@ You will find 'Updates' menu in your WordPress Settings panel.
 4. Updates Settings page and Help
 
 == Changelog ==
+
+= 1.0.2 =
+* Deactivate restore default WordPress behavior
+* Settings Updates panel CSS
 
 = 1.0.1 =
 * Multisite

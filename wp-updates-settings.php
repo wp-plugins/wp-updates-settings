@@ -4,7 +4,7 @@
  * Plugin URI: http://wordpress.org/plugins/wp-updates-settings/
  * Description: Configure WordPress updates settings through UI (User Interface).
  * Author: Yslo
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author URI: http://profiles.wordpress.org/yslo
  * Requires at least: 3.7
  * Tested up to: 3.9
@@ -16,11 +16,15 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
 class WP_Updates_Settings
 {
+	// Define version
+	const VERSION = '1.0.2';
+
 	var $wpus_options;
 	var $current_user_role;
 	var $wpus_admin_page;
 
-	function __construct(){
+	function __construct()
+	{
 		$this->wpus_options = get_option('yslo_wpus_options');
 
 		// Default install settings
@@ -32,46 +36,84 @@ class WP_Updates_Settings
 		load_plugin_textdomain('wpus-plugin', false, 'wp-updates-settings/languages');
 		
 		add_action('init', array(&$this, 'wpus_init_action'));
-		add_action( 'admin_init', array(&$this, 'wpus_admin_init'));
+		add_action('admin_init', array(&$this, 'wpus_admin_init'));
 	}
 
-	function wpus_install(){	
+	function wpus_install()
+	{	
+		// First default install
 		if($this->wpus_options === false)
 		{
 			$wpus_options = array(
 				'notification_updates' => 1,
 				'menu_updates' => 1,
 				'minor_updates' => 1,
-				'translation_updates' => 1
+				'translation_updates' => 1,
+				'version' => self::VERSION
+			);
+			
+			update_option('yslo_wpus_options', $wpus_options);
+		}
+		
+		// Update 1.0.2
+		if(!isset($this->wpus_options['version']) || $this->wpus_options['version'] < self::VERSION)
+		{
+			if(current_user_can('delete_plugins'))
+			{
+				$role =& get_role('administrator');
+				if(!empty($role))
+				{
+						$role->add_cap('update_core');
+						$role->add_cap('update_themes');
+						$role->add_cap('update_plugins');
+				}
+			}
+			
+			$wpus_options = array(
+				'version' => self::VERSION
 			);
 			
 			update_option('yslo_wpus_options', $wpus_options);
 		}
 	}
-	
-	function wpus_init_action(){		
+
+
+	function wpus_init_action()
+	{
 		// Change WordPress updates behaviors using wpus_options
-		if (!isset($this->wpus_options['notification_updates']) || $this->wpus_options['notification_updates'] == 0){
+		if (!isset($this->wpus_options['notification_updates']) || $this->wpus_options['notification_updates'] == 0)
+		{
 			add_action('admin_menu', array(&$this, 'wpus_notification_action'));
 		}
-
-		if (!isset($this->wpus_options['minor_updates']) || $this->wpus_options['minor_updates'] == 0) {
+		
+		if (!isset($this->wpus_options['menu_updates']) || $this->wpus_options['menu_updates'] == 0)
+		{
+			add_action('admin_init', array(&$this, 'wpus_menu_updates_action'));
+			add_action( 'wp_before_admin_bar_render', array(&$this, 'wpus_remove_admin_bar_updates_links'));
+		}
+		
+		if (!isset($this->wpus_options['minor_updates']) || $this->wpus_options['minor_updates'] == 0)
+		{
 			add_filter( 'allow_minor_auto_core_updates', '__return_false' );
 		}
 		
-		if (isset($this->wpus_options['major_updates']) && $this->wpus_options['major_updates'] == 1) {
+		if (isset($this->wpus_options['major_updates']) && $this->wpus_options['major_updates'] == 1)
+		{
 			add_filter( 'allow_major_auto_core_updates', '__return_true' );
 		}
 		
-		if (isset($this->wpus_options['plugin_updates']) && $this->wpus_options['plugin_updates'] == 1) {
+		if (isset($this->wpus_options['plugin_updates']) && $this->wpus_options['plugin_updates'] == 1)
+		{
 			add_filter( 'auto_update_plugin', '__return_true' );
 		}
 		
-		if (isset($this->wpus_options['theme_updates']) && $this->wpus_options['theme_updates'] == 1) {
+		if (isset($this->wpus_options['theme_updates']) && $this->wpus_options['theme_updates'] == 1)
+		{
 			add_filter( 'auto_update_theme', '__return_true' );
 		}
 		
-		if (!isset($this->wpus_options['translation_updates']) || $this->wpus_options['translation_updates'] == 0) {
+		if (!isset($this->wpus_options['translation_updates']) || $this->wpus_options['translation_updates'] == 0)
+		{
 			add_filter( 'auto_update_translation', '__return_false' );
 		}
 		
@@ -80,35 +122,6 @@ class WP_Updates_Settings
 		
 		// Give the plugin a settings link in the plugin overview
 		add_filter('plugin_action_links', array(&$this, 'add_action_link'), 10, 2);
-
-		if (!isset($this->wpus_options['menu_updates']) || $this->wpus_options['menu_updates'] == 0){
-			if(current_user_can('update_core') && !is_multisite()){
-				$role =& get_role('administrator');
-				
-				if(!empty($role)) {
-					$role->remove_cap('update_core');
-					$role->remove_cap('update_themes');
-					$role->remove_cap('update_plugins');
-				}
-				
-				wp_redirect('options-general.php?page=wp-updates-settings/wp-updates-settings.php&settings-updated=true');
-				exit;
-			}
-		}
-		else if($this->wpus_options['menu_updates'] == 1 && !current_user_can('update_core')) {
-			if(current_user_can('install_plugins') && !is_multisite()){	
-				$role =& get_role('administrator');
-
-				if(!empty($role)) {
-					$role->add_cap('update_core');
-					$role->add_cap('update_themes');
-					$role->add_cap('update_plugins');
-				}
-				
-				wp_redirect('options-general.php?page=wp-updates-settings/wp-updates-settings.php&settings-updated=true');
-				exit;		
-			}
-		}
 	}
 
 	function add_action_link($links, $file){
@@ -124,16 +137,31 @@ class WP_Updates_Settings
 		return $links;
 	}
 
-	function wpus_notification_action() {
+	function wpus_notification_action()
+	{
 		remove_action('admin_notices', 'update_nag', 3);
 	}
 	
-	function register_wpus_menu_page(){
+	function wpus_menu_updates_action()
+	{
+		remove_submenu_page('index.php', 'update-core.php');
+		wp_enqueue_style('wp-hide-updates-count', plugins_url( 'css/updates-count.css', __FILE__ ), array(), self::VERSION);
+	}
+	
+	function wpus_remove_admin_bar_updates_links()
+	{
+		global $wp_admin_bar;
+		$wp_admin_bar->remove_menu('updates');
+	}
+	
+	function register_wpus_menu_page()
+	{
 		$this->wpus_admin_page = add_options_page(__('Updates', 'wpus-plugin'), __('Updates', 'wpus-plugin'), 'manage_options', __FILE__, array(&$this, 'wp_updates_manager_menu_page'));
 		add_action('load-'.$this->wpus_admin_page, array(&$this, 'wpus_admin_add_help_tab'));
 	}
 	
-	function wp_updates_manager_menu_page(){
+	function wp_updates_manager_menu_page()
+	{
 		?>
 		<div class="wrap">
 		<?php screen_icon(); ?>
@@ -149,7 +177,8 @@ class WP_Updates_Settings
 		<?php
 	}
 	
-	function wpus_admin_add_help_tab(){
+	function wpus_admin_add_help_tab()
+	{
 		$screen = get_current_screen();
 
 		if ($screen->id != $this->wpus_admin_page)
@@ -204,7 +233,10 @@ class WP_Updates_Settings
 			. '</p>');
 	}
 	
-	function wpus_admin_init(){
+	function wpus_admin_init()
+	{
+		wp_enqueue_style('wp-updates-settings', plugins_url( 'css/style.css', __FILE__ ), array(), self::VERSION);
+
 		register_setting('yslo_wpus_options', 'yslo_wpus_options', array(&$this, 'wpus_validate_options'));
 	
 		add_settings_section('wpus_notification', __('WordPress notification & menu updates', 'wpus-plugin'),	array(&$this, 'wpus_notification_section_text'), 'wpus');
@@ -217,71 +249,83 @@ class WP_Updates_Settings
 		
 		add_settings_section('wpus_plugin_theme', __('Plugin & Theme updates', 'wpus-plugin'),					array(&$this, 'wpus_plugin_theme_section_text'), 'wpus');
 		add_settings_field('wpus_plugin_updates', __('Plugin updates', 'wpus-plugin'),							array(&$this, 'wpus_plugin_updates_input'), 'wpus', 'wpus_plugin_theme');
-		add_settings_field('wpus_theme_updates', __('Theme updates', 'wpus-plugin'),							array(&$this, 'wpus_theme_updates_input'), 'wpus', 'wpus_plugin_theme');
+		add_settings_field('wpus_theme_updates', __('Theme updates', 'wpus-plugin'),								array(&$this, 'wpus_theme_updates_input'), 'wpus', 'wpus_plugin_theme');
 	
 		add_settings_section('wpus_translation', __('Translation updates', 'wpus-plugin'),						array(&$this, 'wpus_translation_section_text'), 'wpus');
 		add_settings_field('wpus_translation_updates', __('Translation updates', 'wpus-plugin'),				array(&$this, 'wpus_translation_updates_input'), 'wpus', 'wpus_translation');
 	}
 	
-	function wpus_notification_section_text(){
+	function wpus_notification_section_text()
+	{
 		_e('By default, notification updates are displayed in Dashboard, Appearance menu and Plugins menu.', 'wpus-plugin');
 	}
 	
-	function wpus_core_section_text(){
+	function wpus_core_section_text()
+	{
 		_e('By default, automatic updates are only enabled for minor core releases.', 'wpus-plugin');
 	}
 	
-	function wpus_plugin_theme_section_text(){
+	function wpus_plugin_theme_section_text()
+	{
 		_e('Automatic plugin and theme updates are disabled by default.', 'wpus-plugin');
 	}
 	
-	function wpus_translation_section_text(){
+	function wpus_translation_section_text()
+	{
 		_e('Automatic translation file updates are already enabled by default.', 'wpus-plugin');
 	}
 	
-	function wpus_notification_updates_input(){
+	function wpus_notification_updates_input()
+	{
 		$options = $this->wpus_options;
 		$option_value = isset($options['notification_updates']) ? $options['notification_updates'] : 0;
 		echo '<input type="checkbox" name="yslo_wpus_options[notification_updates]" value="1" '.checked( $option_value, 1, false ).' />';
 	}
 	
-	function wpus_menu_updates_input(){
+	function wpus_menu_updates_input()
+	{
 		$options = $this->wpus_options;
 		$option_value = isset($options['menu_updates']) ? $options['menu_updates'] : 0;
 		echo '<input type="checkbox" name="yslo_wpus_options[menu_updates]" value="1" '.checked( $option_value, 1, false ).' />';
 	}
 	
-	function wpus_minor_updates_input(){
+	function wpus_minor_updates_input()
+	{
 		$options = $this->wpus_options;
 		$option_value = isset($options['minor_updates']) ? $options['minor_updates'] : 0;
 		echo '<input type="checkbox" name="yslo_wpus_options[minor_updates]" value="1" '.checked( $option_value, 1, false ).' />';
 	}
 	
-	function wpus_major_updates_input(){
+	function wpus_major_updates_input()
+	{
 		$options = $this->wpus_options;
 		$option_value = isset($options['major_updates']) ? $options['major_updates'] : 0;
 		echo '<input type="checkbox" name="yslo_wpus_options[major_updates]" value="1" '.checked( $option_value, 1, false ).' />';
 	}
 	
-	function wpus_plugin_updates_input(){
+	function wpus_plugin_updates_input()
+	{
 		$options = $this->wpus_options;
 		$option_value = isset($options['plugin_updates']) ? $options['plugin_updates'] : 0;
 		echo '<input type="checkbox" name="yslo_wpus_options[plugin_updates]" value="1" '.checked( $option_value, 1, false ).' />';
 	}
 	
-	function wpus_theme_updates_input(){
+	function wpus_theme_updates_input()
+	{
 		$options = $this->wpus_options;
 		$option_value = isset($options['theme_updates']) ? $options['theme_updates'] : 0;
 		echo '<input type="checkbox" name="yslo_wpus_options[theme_updates]" value="1" '.checked( $option_value, 1, false ).' />';
 	}
 	
-	function wpus_translation_updates_input(){
+	function wpus_translation_updates_input()
+	{
 		$options = $this->wpus_options;
 		$option_value = isset($options['translation_updates']) ? $options['translation_updates'] : 0;
 		echo '<input type="checkbox" name="yslo_wpus_options[translation_updates]" value="1" '.checked( $option_value, 1, false ).' />';
 	}
 	
-	function wpus_validate_options($input){
+	function wpus_validate_options($input)
+	{
 		$valid = array();
 		
 		if(filter_var($input['notification_updates'], FILTER_VALIDATE_BOOLEAN))
@@ -304,6 +348,8 @@ class WP_Updates_Settings
 			
 		if(filter_var($input['translation_updates'], FILTER_VALIDATE_BOOLEAN))
 			$valid['translation_updates'] = $input['translation_updates'];
+			
+		$valid['version'] = self::VERSION;
 	
 		return $valid;
 	}
