@@ -56,7 +56,7 @@ class WP_Updates_Settings
 		}
 		
 		// Update 1.0.2
-		if(!isset($this->wpus_options['version']) || $this->wpus_options['version'] < self::VERSION)
+		else if(!isset($this->wpus_options['version']) || $this->wpus_options['version'] < self::VERSION)
 		{
 			if(current_user_can('delete_plugins'))
 			{
