@@ -49,7 +49,7 @@ You will find 'Updates' menu in your WordPress Settings panel.
 == Screenshots ==
 
 1. Activate the plugin
-2. Like to Settings Updates panel
+2. Link to Settings Updates panel
 3. Updates link added to Settings panel
 4. Updates Settings page and Help
 
