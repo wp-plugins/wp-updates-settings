@@ -3,7 +3,7 @@ Contributors: Yslo
 Tags: automatic, background, updates, admin, plugin, core, theme
 Requires at least: 3.7
 Tested up to: 3.9
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,9 @@ You will find 'Updates' menu in your WordPress Settings panel.
 4. Updates Settings page and Help
 
 == Changelog ==
+
+= 1.0.3 =
+* Fix : previous plugin settings on update
 
 = 1.0.2 =
 * Deactivate restore default WordPress behavior

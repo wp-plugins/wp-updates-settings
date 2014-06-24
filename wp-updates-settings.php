@@ -4,7 +4,7 @@
  * Plugin URI: http://wordpress.org/plugins/wp-updates-settings/
  * Description: Configure WordPress updates settings through UI (User Interface).
  * Author: Yslo
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author URI: http://profiles.wordpress.org/yslo
  * Requires at least: 3.7
  * Tested up to: 3.9
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 class WP_Updates_Settings
 {
 	// Define version
-	const VERSION = '1.0.2';
+	const VERSION = '1.0.3';
 
 	var $wpus_options;
 	var $current_user_role;
@@ -69,9 +69,8 @@ class WP_Updates_Settings
 				}
 			}
 			
-			$wpus_options = array(
-				'version' => self::VERSION
-			);
+			$wpus_options = $this->wpus_options;
+			$wpus_options['version'] = self::VERSION;
 			
 			update_option('yslo_wpus_options', $wpus_options);
 		}
