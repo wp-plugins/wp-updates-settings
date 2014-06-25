@@ -3,7 +3,7 @@ Contributors: Yslo
 Tags: automatic, background, updates, admin, plugin, core, theme
 Requires at least: 3.7
 Tested up to: 3.9
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,7 +27,7 @@ Allows you the ability to set Updates and Automatic Background Updates through S
 * Contextual Help
 * Translation MO/PO files
 * Multisite
-* Deactivate restore default WordPress behavior
+* Desactivate restore default WordPress behavior
 * Uninstall restore default WordPress behavior
 
 = Languages =
@@ -44,16 +44,28 @@ You will find 'Updates' menu in your WordPress Settings panel.
 
 == Upgrade Notice ==
 
-* Upgrade restore default WordPress updates behaviors (1.0.0 -> 1.0.1).
+* Upgrade (1.0.x -> 1.0.3 and more) : Your settings are automatically upgraded with previous settings.
+* Upgrade (1.0.1 -> 1.0.2) : You must reset your settings.
+* Upgrade (1.0.0 -> 1.0.1) : Restore default WordPress updates behaviors. You must reset your settings.
 
 == Screenshots ==
 
 1. Activate the plugin
-2. Link to Settings Updates panel
+2. Like to Settings Updates panel
 3. Updates link added to Settings panel
 4. Updates Settings page and Help
 
+== Frequently Asked Questions ==
+
+= I can't activate WP Updates Settings =
+
+* WP Updates Settings could be activated on WordPress 3.7.x and more. If you are using an older version, WP Updates Settings can't be activated.
+
 == Changelog ==
+
+= 1.0.4 =
+* Prevent activation on WordPress 3.6.x (and less).
+* Fix : Settings Updates panel CSS is limitated to this panel
 
 = 1.0.3 =
 * Fix : previous plugin settings on update

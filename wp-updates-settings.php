@@ -1,10 +1,15 @@
 <?php
+
+/**
+ * @package wp-updates-settings
+ * @version 1.0.4
+ */
 /**
  * Plugin Name: WP Updates Settings
  * Plugin URI: http://wordpress.org/plugins/wp-updates-settings/
  * Description: Configure WordPress updates settings through UI (User Interface).
  * Author: Yslo
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author URI: http://profiles.wordpress.org/yslo
  * Requires at least: 3.7
  * Tested up to: 3.9
@@ -17,7 +22,7 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 class WP_Updates_Settings
 {
 	// Define version
-	const VERSION = '1.0.3';
+	const VERSION = '1.0.4';
 
 	var $wpus_options;
 	var $current_user_role;
@@ -55,7 +60,7 @@ class WP_Updates_Settings
 			update_option('yslo_wpus_options', $wpus_options);
 		}
 		
-		// Update 1.0.2
+		// Update 1.0.2 and +
 		else if(!isset($this->wpus_options['version']) || $this->wpus_options['version'] < self::VERSION)
 		{
 			if(current_user_can('delete_plugins'))
@@ -73,6 +78,11 @@ class WP_Updates_Settings
 			$wpus_options['version'] = self::VERSION;
 			
 			update_option('yslo_wpus_options', $wpus_options);
+		}
+		
+		if(version_compare(get_bloginfo('version'), '3.7', '<'))
+		{
+			deactivate_plugins(basename(__FILE__));
 		}
 	}
 
@@ -123,7 +133,8 @@ class WP_Updates_Settings
 		add_filter('plugin_action_links', array(&$this, 'add_action_link'), 10, 2);
 	}
 
-	function add_action_link($links, $file){
+	function add_action_link($links, $file)
+	{
 		static $this_plugin;
 		
 		if (!$this_plugin) $this_plugin = plugin_basename(__FILE__);
@@ -161,6 +172,7 @@ class WP_Updates_Settings
 	
 	function wp_updates_manager_menu_page()
 	{
+		wp_enqueue_style('wp-updates-settings', plugins_url( 'css/style.css', __FILE__ ), array(), self::VERSION);
 		?>
 		<div class="wrap">
 		<?php screen_icon(); ?>
@@ -234,8 +246,6 @@ class WP_Updates_Settings
 	
 	function wpus_admin_init()
 	{
-		wp_enqueue_style('wp-updates-settings', plugins_url( 'css/style.css', __FILE__ ), array(), self::VERSION);
-
 		register_setting('yslo_wpus_options', 'yslo_wpus_options', array(&$this, 'wpus_validate_options'));
 	
 		add_settings_section('wpus_notification', __('WordPress notification & menu updates', 'wpus-plugin'),	array(&$this, 'wpus_notification_section_text'), 'wpus');
@@ -354,4 +364,4 @@ class WP_Updates_Settings
 	}
 }
 
-$wp_Updates_Settings = new WP_Updates_Settings();
+$wp_updates_settings = new WP_Updates_Settings();
