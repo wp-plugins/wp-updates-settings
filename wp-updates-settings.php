@@ -2,14 +2,14 @@
 
 /**
  * @package wp-updates-settings
- * @version 1.0.4
+ * @version 1.1.0
  */
 /**
  * Plugin Name: WP Updates Settings
  * Plugin URI: http://wordpress.org/plugins/wp-updates-settings/
  * Description: Configure WordPress updates settings through UI (User Interface).
  * Author: Yslo
- * Version: 1.0.4
+ * Version: 1.1.0
  * Author URI: http://profiles.wordpress.org/yslo
  * Requires at least: 3.7
  * Tested up to: 3.9
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 class WP_Updates_Settings
 {
 	// Define version
-	const VERSION = '1.0.4';
+	const VERSION = '1.1.0';
 
 	var $wpus_options;
 	var $current_user_role;
@@ -54,6 +54,7 @@ class WP_Updates_Settings
 				'menu_updates' => 1,
 				'minor_updates' => 1,
 				'translation_updates' => 1,
+				'auto_core_update_send_email' => 1,
 				'version' => self::VERSION
 			);
 			
@@ -76,6 +77,11 @@ class WP_Updates_Settings
 			
 			$wpus_options = $this->wpus_options;
 			$wpus_options['version'] = self::VERSION;
+	
+			// Update 1.0.4 and +		
+			if( $wpus_options['version'] < '1.1.0' ) {
+				$wpus_options['auto_core_update_send_email'] = 1;
+			}
 			
 			update_option('yslo_wpus_options', $wpus_options);
 		}
@@ -125,6 +131,12 @@ class WP_Updates_Settings
 		{
 			add_filter( 'auto_update_translation', '__return_false' );
 		}
+		
+		if (!isset($this->wpus_options['auto_core_update_send_email']) || $this->wpus_options['auto_core_update_send_email'] == 0)
+		{
+			add_filter( 'auto_core_update_send_email', '__return_false' );
+		}
+
 		
 		// Add admin menu
 		add_action('admin_menu', array(&$this, 'register_wpus_menu_page'));
@@ -230,6 +242,14 @@ class WP_Updates_Settings
 		));
 		
 		$screen->add_help_tab( array(
+			'id'	=> 'wpus_help_email_updates_tab',
+			'title'	=> __('Email updates', 'wpus-plugin'),
+			'content'	=> '<p>'. __('WordPress 3.7 (and more) use Automatic Background Updates (see <a href="http://codex.wordpress.org/Configuring_Automatic_Background_Updates" target="_blank">Configuring Automatic Background Updates</a>)', 'wpus-plugin')
+				. '<ul><li>' . __('<strong>Email updates</strong> are enabled by default. Uncheck this option to disable WordPress Email updates. Check this option to restore default behavior.', 'wpus-plugin') . '</li></ul>'
+				. '</p>',
+		));
+		
+		$screen->add_help_tab( array(
 			'id'	=> 'wpus_help_uninstall_tab',
 			'title'	=> __('Uninstall', 'wpus-plugin'),
 			'content'	=> '<p>'. __('Uninstall <strong>WP Updates Settings</strong> will restore default WordPress updates behaviors.', 'wpus-plugin') . '</p>',
@@ -262,6 +282,9 @@ class WP_Updates_Settings
 	
 		add_settings_section('wpus_translation', __('Translation updates', 'wpus-plugin'),						array(&$this, 'wpus_translation_section_text'), 'wpus');
 		add_settings_field('wpus_translation_updates', __('Translation updates', 'wpus-plugin'),				array(&$this, 'wpus_translation_updates_input'), 'wpus', 'wpus_translation');
+		
+		add_settings_section('wpus_auto_core_email', __('Email updates', 'wpus-plugin'),						array(&$this, 'wpus_core_update_email_section_text'), 'wpus');
+		add_settings_field('wpus_auto_update_email_updates', __('Email updates', 'wpus-plugin'),				array(&$this, 'wpus_core_update_email_input'), 'wpus', 'wpus_auto_core_email');
 	}
 	
 	function wpus_notification_section_text()
@@ -282,6 +305,11 @@ class WP_Updates_Settings
 	function wpus_translation_section_text()
 	{
 		_e('Automatic translation file updates are already enabled by default.', 'wpus-plugin');
+	}
+	
+	function wpus_core_update_email_section_text()
+	{
+		_e('Automatic emails are sent on updates. This features is enabled by default.', 'wpus-plugin');
 	}
 	
 	function wpus_notification_updates_input()
@@ -333,6 +361,13 @@ class WP_Updates_Settings
 		echo '<input type="checkbox" name="yslo_wpus_options[translation_updates]" value="1" '.checked( $option_value, 1, false ).' />';
 	}
 	
+	function wpus_core_update_email_input()
+	{
+		$options = $this->wpus_options;
+		$option_value = isset($options['auto_core_update_send_email']) ? $options['auto_core_update_send_email'] : 0;
+		echo '<input type="checkbox" name="yslo_wpus_options[auto_core_update_send_email]" value="1" '.checked( $option_value, 1, false ).' />';
+	}
+	
 	function wpus_validate_options($input)
 	{
 		$valid = array();
@@ -357,6 +392,9 @@ class WP_Updates_Settings
 			
 		if(filter_var($input['translation_updates'], FILTER_VALIDATE_BOOLEAN))
 			$valid['translation_updates'] = $input['translation_updates'];
+
+		if(filter_var($input['auto_core_update_send_email'], FILTER_VALIDATE_BOOLEAN))
+			$valid['auto_core_update_send_email'] = $input['auto_core_update_send_email'];
 			
 		$valid['version'] = self::VERSION;
 	
