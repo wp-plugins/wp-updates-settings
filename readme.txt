@@ -23,6 +23,7 @@ Allows you the ability to set Updates and Automatic Background Updates through S
 * Set Plugin Automatic Background Updates
 * Set Theme Automatic Background Updates
 * Set Translation files Automatic Background Updates
+* Set Auto Core Update Notification emails.
 * Add Updates panel (Settings > Updates)
 * Contextual Help
 * Translation MO/PO files
