@@ -2,14 +2,14 @@
 
 /**
  * @package wp-updates-settings
- * @version 1.1.0
+ * @version 1.1.1
  */
 /**
  * Plugin Name: WP Updates Settings
  * Plugin URI: http://wordpress.org/plugins/wp-updates-settings/
  * Description: Configure WordPress updates settings through UI (User Interface).
  * Author: Yslo
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author URI: http://profiles.wordpress.org/yslo
  * Requires at least: 3.7
  * Tested up to: 3.9
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 class WP_Updates_Settings
 {
 	// Define version
-	const VERSION = '1.1.0';
+	const VERSION = '1.1.1';
 
 	var $wpus_options;
 	var $current_user_role;
@@ -76,12 +76,13 @@ class WP_Updates_Settings
 			}
 			
 			$wpus_options = $this->wpus_options;
-			$wpus_options['version'] = self::VERSION;
 	
 			// Update 1.0.4 and +		
 			if( $wpus_options['version'] < '1.1.0' ) {
 				$wpus_options['auto_core_update_send_email'] = 1;
 			}
+
+			$wpus_options['version'] = self::VERSION;
 			
 			update_option('yslo_wpus_options', $wpus_options);
 		}
