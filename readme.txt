@@ -3,7 +3,7 @@ Contributors: Yslo
 Tags: automatic, background, updates, admin, plugin, core, theme
 Requires at least: 3.7
 Tested up to: 4.0
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,9 @@ You will find 'Updates' menu in your WordPress Settings panel.
 * WP Updates Settings could be activated on WordPress 3.7.x and more. If you are using an older version, WP Updates Settings can't be activated.
 
 == Changelog ==
+
+= 1.1.2 =
+* Code improvement
 
 = 1.1.1 =
 * Fix : Default Auto Core Update Notification emails setting.
