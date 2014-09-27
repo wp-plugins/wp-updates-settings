@@ -2,17 +2,17 @@
 
 /**
  * @package wp-updates-settings
- * @version 1.1.1
+ * @version 1.1.2
  */
 /**
  * Plugin Name: WP Updates Settings
  * Plugin URI: http://wordpress.org/plugins/wp-updates-settings/
  * Description: Configure WordPress updates settings through UI (User Interface).
  * Author: Yslo
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author URI: http://profiles.wordpress.org/yslo
  * Requires at least: 3.7
- * Tested up to: 3.9
+ * Tested up to: 4.0
  * License: GPLv2 or later
  * License URI: http://www.gnu.org/licenses/gpl-2.0.html
  */
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
 class WP_Updates_Settings
 {
 	// Define version
-	const VERSION = '1.1.1';
+	const VERSION = '1.1.2';
 
 	var $wpus_options;
 	var $current_user_role;
@@ -57,8 +57,6 @@ class WP_Updates_Settings
 				'auto_core_update_send_email' => 1,
 				'version' => self::VERSION
 			);
-			
-			update_option('yslo_wpus_options', $wpus_options);
 		}
 		
 		// Update 1.0.2 and +
@@ -78,14 +76,15 @@ class WP_Updates_Settings
 			$wpus_options = $this->wpus_options;
 	
 			// Update 1.0.4 and +		
-			if( $wpus_options['version'] < '1.1.0' ) {
+			if( version_compare($wpus_options['version'], '1.1.0', '<') ) {
 				$wpus_options['auto_core_update_send_email'] = 1;
 			}
 
 			$wpus_options['version'] = self::VERSION;
 			
-			update_option('yslo_wpus_options', $wpus_options);
 		}
+
+		update_option('yslo_wpus_options', $wpus_options);
 		
 		if(version_compare(get_bloginfo('version'), '3.7', '<'))
 		{
